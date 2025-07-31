@@ -9,35 +9,33 @@ import 'package:roky_holding/env/number_format.dart';
 import 'package:roky_holding/env/user_data.dart';
 import 'package:roky_holding/md_03/estimation_approve_dialog.dart';
 import 'package:roky_holding/md_03/estimation_authorized_dialog.dart';
-
+import 'package:roky_holding/md_04/view_ofz_request_list.dart';
+import 'package:roky_holding/md_05/approve_ofz_request_dialog_box.dart';
+import 'package:roky_holding/md_05/auth_ofz_request_dialog_box.dart';
 import '../env/DialogBoxs.dart';
 import '../env/app_logs_to.dart';
 import '../env/print_debug.dart';
 import '../env/sp_format_data.dart';
+
+
 
 class EstimationApprovingDialog extends StatefulWidget {
   final String id;
   final String estimationId;
   final String locationID;
   final double newAmount;
-  const EstimationApprovingDialog(
-      {super.key,
-      required this.newAmount,
-      required this.id,
-      required this.estimationId,
-      required this.locationID});
+  const EstimationApprovingDialog({super.key,required this.newAmount ,required this.id,required this.estimationId,required this.locationID});
 
   @override
-  EstimationApprovingDialogState createState() =>
-      EstimationApprovingDialogState();
+  EstimationApprovingDialogState createState() => EstimationApprovingDialogState();
 }
 
 class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
   List<EstimationAuth> _requests = [];
   bool _isLoading = true;
   String _errorMessage = '';
-  late int estimationId = 0;
-  late int estimationReqId = 0;
+  late  int estimationId=0;
+  late int estimationReqId=0;
 
   final TextEditingController _txtComment = TextEditingController();
   @override
@@ -50,8 +48,7 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
 
   Future<void> fetchRequests() async {
     WaitDialog.showWaitDialog(context, message: 'Loading...');
-    String apiURL =
-        '${APIHost().apiURL}/estimation_controller.php/GetEventData';
+    String apiURL = '${APIHost().apiURL}/estimation_controller.php/GetEventData';
     PD.pd(text: apiURL);
     try {
       final response = await http.post(
@@ -71,17 +68,18 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
         PD.pd(text: responseData.toString());
         if (responseData['status'] == 200) {
           List<dynamic> data = responseData['data'];
-          estimationReqId =
-              int.tryParse(data[0]['estimation_req_id'].toString()) ?? 0;
-          estimationId = int.tryParse(data[0]['estimation_id'].toString()) ?? 0;
+          estimationReqId =int.tryParse(data[0]['estimation_req_id'].toString())??0;
+          estimationId=int.tryParse(data[0]['estimation_id'].toString())??0;
           PD.pd(text: estimationReqId.toString());
-        } else {
+        }
+        else {
           setState(() {
             _errorMessage = responseData['message'] ?? 'Error loading requests';
             _isLoading = false;
           });
         }
-      } else {
+      }
+      else {
         Navigator.pop(context);
         setState(() {
           _errorMessage = 'HTTP Error: ${response.statusCode}';
@@ -92,7 +90,8 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
       ExceptionLogger.logToError(
           message: e.toString(),
           errorLog: st.toString(),
-          logFile: 'estimation_approve_dialog.dart');
+          logFile: 'estimation_approve_dialog.dart'
+      );
 
       setState(() {
         _errorMessage = 'Error: ${e.toString()}';
@@ -100,11 +99,10 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
     }
   }
 
-  Future<void> approveOrRejectRequest(BuildContext context, int estimationId,
-      int estimationReqId, int isApproved) async {
+  Future<void> approveOrRejectRequest(BuildContext context, int estimationId, int estimationReqId, int isApproved) async {
     WaitDialog.showWaitDialog(context, message: 'Processing Request');
     try {
-      String apiURL = '${APIHost().apiURL}/estimation_controller.php/Approved';
+      String apiURL='${APIHost().apiURL}/estimation_controller.php/Approved';
       PD.pd(text: apiURL);
       final response = await http.post(
         Uri.parse(apiURL),
@@ -113,7 +111,7 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
           "Authorization": APIToken().token,
           "estimation_id": estimationId,
           "estimation_req_id": estimationReqId,
-          "is_appr": isApproved,
+          "is_appr":isApproved,
           "appr_by": UserCredentials().UserName,
           "appr_cmt": _txtComment.text,
           "location_id": widget.locationID,
@@ -132,9 +130,9 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
           icon: Icons.verified_outlined,
           iconColor: Colors.black,
           btnColor: Colors.green,
-        ).then((value) {
-          if (value == true) {
-            Navigator.pop(context, true);
+        ).then((value){
+          if(value==true){
+            Navigator.pop(context,true);
           }
         });
       } else {
@@ -148,11 +146,8 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
           btnColor: Colors.black,
         );
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'estimation_approve_dialog.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'estimation_approve_dialog.dart');
       WaitDialog.hideDialog(context);
       ExceptionDialog.exceptionDialog(
         context,
@@ -165,7 +160,6 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return CupertinoAlertDialog(
@@ -177,10 +171,9 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
         child: Column(
           children: [
             CupertinoTextField(
-              controller:
-                  _txtComment, // Use CupertinoTextField instead of TextField
+              controller: _txtComment,  // Use CupertinoTextField instead of TextField
               placeholder: 'Enter your comment here',
-              maxLines: 3, // Limit the height of the text field
+              maxLines: 3,  // Limit the height of the text field
               padding: EdgeInsets.all(8.0), // Padding for text field
             ),
             const SizedBox(height: 16),
@@ -192,8 +185,7 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
           onPressed: () async {
             final val = await YNDialogCon.ynDialogMessage(
               context,
-              messageBody:
-                  'Are you sure you want to Reject the estimation approving request ${widget.id}?',
+              messageBody: 'Are you sure you want to Reject the estimation approving request ${widget.id}?',
               messageTitle: 'Confirm Payment',
               icon: Icons.verified,
               iconColor: Colors.green,
@@ -201,23 +193,18 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
               btnClose: 'Cancel',
             );
             if (val == 1) {
-              approveOrRejectRequest(
-                  context, estimationId, estimationReqId, -1);
+              approveOrRejectRequest(context,estimationId,estimationReqId,-1);
             }
 
             //Navigator.pop(context);
           },
-          child: const Text(
-            'Reject',
-            style: TextStyle(color: CupertinoColors.systemRed),
-          ),
+          child: const Text('Reject', style: TextStyle(color: CupertinoColors.systemRed),),
         ),
         CupertinoDialogAction(
           onPressed: () async {
             final val = await YNDialogCon.ynDialogMessage(
               context,
-              messageBody:
-                  'Are you sure you want to Approve request number ${widget.id}?',
+              messageBody: 'Are you sure you want to Approve request number ${widget.id}?',
               messageTitle: 'Confirm Payment',
               icon: Icons.verified,
               iconColor: Colors.green,
@@ -225,8 +212,7 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
               btnClose: 'Cancel',
             );
             if (val == 1) {
-              approveOrRejectRequest(context, estimationId, estimationReqId,
-                  1); // Pass comment to the API
+                approveOrRejectRequest(context,estimationId,estimationReqId,1); // Pass comment to the API
             }
 
             //Navigator.pop(context);
@@ -240,4 +226,6 @@ class EstimationApprovingDialogState extends State<EstimationApprovingDialog> {
       ],
     );
   }
+
+
 }

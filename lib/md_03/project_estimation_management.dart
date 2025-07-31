@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:roky_holding/env/app_bar.dart';
 import 'package:http/http.dart' as http;
 import 'package:roky_holding/env/number_format.dart';
+import 'package:roky_holding/md_06/view_location_estimation.dart';
 import '../env/DialogBoxs.dart';
 import '../env/api_info.dart';
 import '../env/app_logs_to.dart';
@@ -57,7 +58,7 @@ class _ConstructionEstimationCreateState
           "Authorization": token,
           "project_name": _selectedProjectName.toString(),
           "location_name": _selectedProjectLocationName.toString(),
-          "show_only_estimated": '0'
+          "show_only_estimated":'0'
         }),
       );
 
@@ -77,11 +78,8 @@ class _ConstructionEstimationCreateState
         WaitDialog.hideDialog(context);
         throw Exception("HTTP Error: ${response.statusCode}");
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       PD.pd(text: e.toString());
       OneBtnDialog.oneButtonDialog(
@@ -145,11 +143,8 @@ class _ConstructionEstimationCreateState
         WaitDialog.hideDialog(context);
         PD.pd(text: "HTTP Error: ${response.statusCode}");
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       PD.pd(text: e.toString());
     } finally {
@@ -212,11 +207,8 @@ class _ConstructionEstimationCreateState
         WaitDialog.hideDialog(context);
         PD.pd(text: "HTTP Error: ${response.statusCode}");
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       PD.pd(text: e.toString());
     } finally {
@@ -282,11 +274,8 @@ class _ConstructionEstimationCreateState
         WaitDialog.hideDialog(context);
         PD.pd(text: "HTTP Error: ${response.statusCode}");
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       PD.pd(text: e.toString());
     } finally {
@@ -351,11 +340,8 @@ class _ConstructionEstimationCreateState
         WaitDialog.hideDialog(context);
         PD.pd(text: "HTTP Error: ${response.statusCode}");
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       PD.pd(text: e.toString());
     } finally {
@@ -370,8 +356,7 @@ class _ConstructionEstimationCreateState
   final List<dynamic> _activeMaterialList = [];
   List<dynamic> _activeMaterialListMap = [];
   bool _isLoadingMaterialList = false;
-  Future<void> _loadActiveMaterialList(
-      String? workName, String? costCategory) async {
+  Future<void> _loadActiveMaterialList(String? workName, String? costCategory) async {
     setState(() {
       _isLoadingMaterialList = true;
     });
@@ -422,11 +407,8 @@ class _ConstructionEstimationCreateState
         WaitDialog.hideDialog(context);
         PD.pd(text: "HTTP Error: ${response.statusCode}");
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       PD.pd(text: e.toString());
     } finally {
@@ -447,15 +429,11 @@ class _ConstructionEstimationCreateState
   final _txtEstimationAmount = TextEditingController();
   final _txtDescriptions = TextEditingController();
 
-  Future<pw.Document> generateEstimationPdf(
-    List<dynamic> estimationList,
-    String projectName,
-    String locationName,
-  ) async {
+  Future<pw.Document> generateEstimationPdf( List<dynamic> estimationList, String projectName, String locationName, ) async {
     final pdf = pw.Document();
 
     final printedDateTime =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
     final footerLogo = pw.MemoryImage(
       (await rootBundle.load('assets/image/HBiz.jpg')).buffer.asUint8List(),
@@ -466,6 +444,7 @@ class _ConstructionEstimationCreateState
     );
     final pageTheme = pw.PageTheme(
       margin: pw.EdgeInsets.all(32),
+
     );
 
     pdf.addPage(
@@ -519,6 +498,10 @@ class _ConstructionEstimationCreateState
             ],
           ),
         ),
+
+
+
+
         pageTheme: pageTheme,
         build: (pw.Context context) {
           return [
@@ -605,14 +588,14 @@ class _ConstructionEstimationCreateState
                 'Unit Cost (LKR)'
               ],
               data: estimationList.map((estimation) {
-                double estimateAmount = double.tryParse(
-                        estimation['ItemEstimateAmount'].toString()) ??
-                    0;
+                double estimateAmount =
+                    double.tryParse(estimation['ItemEstimateAmount'].toString()) ??
+                        0;
                 double actualCost =
                     double.tryParse(estimation['actual_cost'].toString()) ?? 0;
-                double actualUnitAmount = double.tryParse(
-                        estimation['actual_unit_amount'].toString()) ??
-                    0;
+                double actualUnitAmount =
+                    double.tryParse(estimation['actual_unit_amount'].toString()) ??
+                        0;
 
                 return [
                   estimation['work_name'],
@@ -640,13 +623,10 @@ class _ConstructionEstimationCreateState
                 ),
                 pw.Text(
                   NumberFormat('#,###.00', 'en_US').format(
-                    estimationList.fold(
-                        0.0,
-                        (sum, item) =>
-                            sum +
-                            (double.tryParse(
-                                    item['ItemEstimateAmount'].toString()) ??
-                                0)),
+                    estimationList.fold(0.0, (sum, item) =>
+                    sum +
+                        (double.tryParse(item['ItemEstimateAmount'].toString()) ??
+                            0)),
                   ),
                   style: pw.TextStyle(fontSize: 12),
                 ),
@@ -667,12 +647,9 @@ class _ConstructionEstimationCreateState
                 ),
                 pw.Text(
                   NumberFormat('#,###.00', 'en_US').format(
-                    estimationList.fold(
-                        0.0,
-                        (sum, item) =>
-                            sum +
-                            (double.tryParse(item['actual_cost'].toString()) ??
-                                0)),
+                    estimationList.fold(0.0, (sum, item) =>
+                    sum +
+                        (double.tryParse(item['actual_cost'].toString()) ?? 0)),
                   ),
                   style: pw.TextStyle(fontSize: 12),
                 ),
@@ -697,6 +674,7 @@ class _ConstructionEstimationCreateState
     return pdf;
   }
 
+
   Future<void> _exportAndPrintPdf(List<dynamic> estimationList) async {
     final pdf = await generateEstimationPdf(
         estimationList,
@@ -719,29 +697,22 @@ class _ConstructionEstimationCreateState
   double amount = 0;
 
   void _updateAmount() {
-    double inputAmount =
-        double.tryParse(_txtEstimationAmount.text.replaceAll(',', '')) ?? 0.0;
+    double inputAmount= double.tryParse(_txtEstimationAmount.text.replaceAll(',', ''))??0.0;
     if (inputAmount == 0 || _txtEstimationAmount.text.isEmpty) {
       try {
         double qty = double.tryParse(_txtQty.text) ?? 0;
-        double price =
-            double.tryParse(_price.toString().replaceAll(',', '')) ?? 0;
+        double price = double.tryParse(_price.toString().replaceAll(',', '')) ?? 0;
         setState(() {
           amount = qty * price;
         });
-        _txtEstimationAmount.text =
-            NumberStyles.currencyStyle(_price.toString());
-      } catch (e, st) {
-        ExceptionLogger.logToError(
-            message: e.toString(),
-            errorLog: st.toString(),
-            logFile: 'project_estimation_management.dart');
+        _txtEstimationAmount.text = NumberStyles.currencyStyle(_price.toString());
+      } catch (e,st) {
+        ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       }
     } else {}
   }
 
-  Future<void> _loadMaterialInfo(
-      String? workName, String? costCategory, String? materialName) async {
+  Future<void> _loadMaterialInfo( String? workName, String? costCategory, String? materialName) async {
     try {
       WaitDialog.showWaitDialog(context, message: 'loading..');
 
@@ -773,11 +744,11 @@ class _ConstructionEstimationCreateState
               _qty = materialData['qty'];
               _price = materialData['amount'];
               _unit = materialData['uom'];
-              _txtEstimationAmount.text = '';
-              _txtQty.text = '';
+              _txtEstimationAmount.text='';
+              _txtQty.text='';
               _txtDescriptions.text = materialData['material_name'];
             });
-            /* ScaffoldMessenger.of(context).showSnackBar(
+           /* ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                   content: Text('Material ID: $_materialId'),
                   backgroundColor: Colors.green),
@@ -803,11 +774,8 @@ class _ConstructionEstimationCreateState
               backgroundColor: Colors.red),
         );
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       WaitDialog.hideDialog(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Exception: $e'), backgroundColor: Colors.red),
@@ -844,7 +812,7 @@ class _ConstructionEstimationCreateState
           "cost_category": _selectedValueCostCategory.toString(),
           "work_name": _selectedValueWorkType.toString(),
           "material_name": _txtMaterialDropDown.text,
-          'uom': _unit
+          'uom':_unit
         }),
       );
 
@@ -857,7 +825,7 @@ class _ConstructionEstimationCreateState
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                   content:
-                      Text(responseData['message'] ?? 'Estimation Created'),
+                  Text(responseData['message'] ?? 'Estimation Created'),
                   backgroundColor: Colors.green),
             );
             PD.pd(text: responseData.toString());
@@ -865,22 +833,13 @@ class _ConstructionEstimationCreateState
             clearData();
           } else {
             final String message = responseData['message'] ?? 'Error';
-            OneBtnDialog.oneButtonDialog(context,
-                title: 'Bad Request',
-                message: message,
-                btnName: 'Ok',
-                icon: Icons.error,
-                iconColor: Colors.red,
-                btnColor: Colors.black);
+            OneBtnDialog.oneButtonDialog(context, title: 'Bad Request', message: message, btnName: 'Ok', icon: Icons.error, iconColor: Colors.red, btnColor: Colors.black);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(message), backgroundColor: Colors.red),
             );
           }
-        } catch (e, st) {
-          ExceptionLogger.logToError(
-              message: e.toString(),
-              errorLog: st.toString(),
-              logFile: 'project_estimation_management.dart');
+        } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
           String errorMessage =
               "Error decoding JSON: $e, Body: ${response.body}";
           ScaffoldMessenger.of(context).showSnackBar(
@@ -895,11 +854,8 @@ class _ConstructionEstimationCreateState
           try {
             final errorData = jsonDecode(response.body);
             errorMessage = errorData['message'] ?? errorMessage;
-          } catch (e, st) {
-            ExceptionLogger.logToError(
-                message: e.toString(),
-                errorLog: st.toString(),
-                logFile: 'project_estimation_management.dart');
+          } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
             errorMessage = response.body;
           }
         }
@@ -907,11 +863,8 @@ class _ConstructionEstimationCreateState
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       Navigator.pop(context);
       String errorMessage = 'An error occurred: $e';
       if (e is FormatException) {
@@ -968,7 +921,7 @@ class _ConstructionEstimationCreateState
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                   content:
-                      Text(responseData['message'] ?? 'Estimation Created'),
+                  Text(responseData['message'] ?? 'Estimation Created'),
                   backgroundColor: Colors.green),
             );
           } else if (status == 409) {
@@ -988,11 +941,8 @@ class _ConstructionEstimationCreateState
               SnackBar(content: Text(message), backgroundColor: Colors.red),
             );
           }
-        } catch (e, st) {
-          ExceptionLogger.logToError(
-              message: e.toString(),
-              errorLog: st.toString(),
-              logFile: 'project_estimation_management.dart');
+        } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
           String errorMessage =
               "Error decoding JSON: $e, Body: ${response.body}";
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1006,11 +956,8 @@ class _ConstructionEstimationCreateState
           try {
             final errorData = jsonDecode(response.body);
             errorMessage = errorData['message'] ?? errorMessage;
-          } catch (e, st) {
-            ExceptionLogger.logToError(
-                message: e.toString(),
-                errorLog: st.toString(),
-                logFile: 'project_estimation_management.dart');
+          } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
             errorMessage = response.body;
           }
         }
@@ -1018,11 +965,8 @@ class _ConstructionEstimationCreateState
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'project_estimation_management.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'project_estimation_management.dart');
       String errorMessage = 'An error occurred: $e';
       if (e is FormatException) {
         errorMessage = 'Invalid JSON response';
@@ -1058,22 +1002,22 @@ class _ConstructionEstimationCreateState
             padding: const EdgeInsets.all(20.0),
             child: isWideScreen
                 ? Row(
-                    // Two columns if screen is wide
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildCreateEstimationForm()),
-                      const SizedBox(width: 20), // Spacing between columns
-                      Expanded(child: _buildActiveEstimationListCard()),
-                    ],
-                  )
+              // Two columns if screen is wide
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _buildCreateEstimationForm()),
+                const SizedBox(width: 20), // Spacing between columns
+                Expanded(child: _buildActiveEstimationListCard()),
+              ],
+            )
                 : Column(
-                    // Stack in a single column if screen is narrow
-                    children: [
-                      _buildCreateEstimationForm(),
-                      const SizedBox(height: 20), // Spacing between sections
-                      _buildActiveEstimationListCard(),
-                    ],
-                  ),
+              // Stack in a single column if screen is narrow
+              children: [
+                _buildCreateEstimationForm(),
+                const SizedBox(height: 20), // Spacing between sections
+                _buildActiveEstimationListCard(),
+              ],
+            ),
           );
         },
       ),
@@ -1100,10 +1044,23 @@ class _ConstructionEstimationCreateState
               child: const Icon(Icons.print),
             ),
           ),
+          // Second Floating Action Button
+          Positioned(
+            bottom: 16.0,
+            right: 96.0, // Adjust the right position to prevent overlap
+            child: FloatingActionButton(
+              onPressed: () {
+               Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewLocationWiseEstimationPage(isEdit: true)));
+              },
+              tooltip: 'Edit Estimation',
+              child: const Icon(Icons.edit),
+            ),
+          ),
         ],
       ),
     );
   }
+
 
   Widget _buildCreateEstimationForm() {
     return Card(
@@ -1191,16 +1148,11 @@ class _ConstructionEstimationCreateState
                     buildTextField(_txtDescriptions, 'Descriptions', 'Cement',
                         Icons.description, true, 45),
                     Visibility(
-                        visible: _price == '-1'
-                            ? false
-                            : _price == ''
-                                ? false
-                                : true,
+                        visible: _price == '-1' ? false:_price == '' ? false : true,
                         child: Column(
                           children: <Widget>[
                             buildDetailRow('Material ID', _materialId),
-                            buildDetailRow('Price',
-                                NumberStyles.currencyStyle(_price.toString())),
+                            buildDetailRow('Price', NumberStyles.currencyStyle(_price.toString())),
                             buildDetailRow('Qty', '$_qty $_unit'),
                           ],
                         )),
@@ -1222,13 +1174,12 @@ class _ConstructionEstimationCreateState
                         Expanded(
                             flex: 5,
                             child: buildNumberField(
-                              _txtEstimationAmount,
-                              'Unit Cost',
-                              '1500',
-                              LKRIcon(),
-                              true,
-                              10,
-                            )),
+                                _txtEstimationAmount,
+                                'Unit Cost',
+                                '1500',
+                                LKRIcon(),
+                                true,
+                                10,)),
                       ],
                     ),
                   ],
@@ -1331,13 +1282,13 @@ class _ConstructionEstimationCreateState
           'cost_category': estimation['cost_category'],
           'material_description': estimation['material_description'],
           'estimate_qty':
-              double.tryParse(estimation['estimate_qty'].toString()) ?? 0,
+          double.tryParse(estimation['estimate_qty'].toString()) ?? 0,
           'ItemEstimateAmount':
-              double.tryParse(estimation['ItemEstimateAmount'].toString()) ?? 0,
+          double.tryParse(estimation['ItemEstimateAmount'].toString()) ?? 0,
           'actual_cost':
-              double.tryParse(estimation['actual_cost'].toString()) ?? 0,
+          double.tryParse(estimation['actual_cost'].toString()) ?? 0,
           'actual_unit_amount':
-              double.tryParse(estimation['actual_unit_amount'].toString()) ?? 0,
+          double.tryParse(estimation['actual_unit_amount'].toString()) ?? 0,
         };
       }
     }

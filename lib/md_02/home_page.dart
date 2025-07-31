@@ -13,12 +13,23 @@ import 'package:roky_holding/md_03/material_create_management.dart';
 import 'package:roky_holding/md_03/project_management.dart';
 import 'package:roky_holding/md_03/exp_and_task_designer.dart';
 import 'package:roky_holding/md_03/project_pending_estimations.dart';
+import 'package:roky_holding/md_04/auth_office_payment_request.dart';
+import 'package:roky_holding/md_04/project_bill_data_entry_form.dart';
+import 'package:roky_holding/md_04/office_payment_request_form.dart';
+import 'package:roky_holding/md_04/project_bill_request.dart';
+import 'package:roky_holding/md_04/view_user_own_request_list.dart';
+import 'package:roky_holding/md_06/iou_settlements.dart';
+import 'package:roky_holding/md_06/report_list.dart';
+import 'package:roky_holding/md_07/reminders.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../env/DialogBoxs.dart';
 import '../env/api_info.dart';
 import '../env/app_logs_to.dart';
 import '../env/print_debug.dart';
 import '../md_03/location_lockout_dialog.dart';
+import '../md_04/auth_project_payment_request.dart';
+import '../md_05/payment_process_all.dart';
+import '../md_06/view_pending_request.dart';
 import 'app_maintenance.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,6 +51,7 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _isAdvancedLayout = widget.isAdvance;
       _loadUserPermissions();
+
     });
   }
 
@@ -61,6 +73,10 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
+
+
+
+
 
   Future<void> _loadUserPermissions() async {
     try {
@@ -103,15 +119,15 @@ class _HomePageState extends State<HomePage> {
                 userPermission['alw_pm_create'] == 1;
             _permissions['alw_lm'] = userPermission['alw_lm'] == 1;
             _permissions['is_active'] = userPermission['is_active'] == 1;
-            _permissions['alw_exp_task_plan'] =
-                userPermission['alw_exp_task_plan'] == 1;
+            _permissions['alw_exp_task_plan'] = userPermission['alw_exp_task_plan'] == 1;
             _permissions['alw_pbc'] = userPermission['alw_pbc'] == 1;
-            _permissions['alw_ofz_tsk_desg'] =
-                userPermission['alw_ofz_tsk_desg'] == 1;
+            _permissions['alw_ofz_tsk_desg'] = userPermission['alw_ofz_tsk_desg'] == 1;
+
 
             _permissions['alw_est_appr'] = userPermission['alw_est_appr'] == 1;
             _permissions['alw_est_auth'] = userPermission['alw_est_auth'] == 1;
             _permissions['alw_est_edit'] = userPermission['alw_est_edit'] == 1;
+
           });
           _remindPwd();
           _checkPendingRequestsForDialog();
@@ -138,11 +154,8 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       }
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'home_page.dart');
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'home_page.dart');
       _clearUserPermissions();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
@@ -150,13 +163,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+
   Future<void> _checkPendingRequestsForDialog() async {
     try {
-      WaitDialog.showWaitDialog(context,
-          message: 'Checking Pending Requests...');
+      WaitDialog.showWaitDialog(context, message: 'Checking Pending Requests...');
       final response = await http.post(
-        Uri.parse(
-            '${APIHost().apiURL}/project_payment_controller.php/PaymentNotification'),
+        Uri.parse('${APIHost().apiURL}/project_payment_controller.php/PaymentNotification'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "Authorization": APIToken().token,
@@ -169,12 +181,10 @@ class _HomePageState extends State<HomePage> {
         final responseData = jsonDecode(response.body);
         PD.pd(text: responseData.toString());
         if (responseData['status'] == 200 && responseData['data'] is List) {
-          await showRequestRefDialog(responseData['data'], context);
+          await showRequestRefDialog(responseData['data'],context);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    responseData['message'] ?? 'No pending requests found')),
+            SnackBar(content: Text(responseData['message'] ?? 'No pending requests found')),
           );
         }
       } else {
@@ -193,6 +203,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
+
 
   void _clearUserPermissions() {
     setState(() {
@@ -240,6 +251,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(context).pop();
                 _fetchEstimationEvents();
+
               },
               child: const Text(
                 'Logout',
@@ -258,16 +270,19 @@ class _HomePageState extends State<HomePage> {
         content: Text('Logged out successfully!'),
       ),
     );
-    APIToken().token = null;
+    APIToken().token=null;
     clearAllPrefs();
     UserCredentials().setUserData('', '', '', -1, -1);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (_) => LoginApp()));
   }
 
+
+
   Future<void> _fetchEstimationEvents() async {
     try {
-      String apiUrl = '${APIHost().apiURL}/login_controller.php/logout';
+      String apiUrl='${APIHost()
+          .apiURL}/login_controller.php/logout';
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
@@ -278,24 +293,66 @@ class _HomePageState extends State<HomePage> {
         final responseData = jsonDecode(response.body);
         if (responseData['status'] == 200) {
           _logoutUser();
-        } else {}
-      } else {}
-    } catch (e, st) {
-      ExceptionLogger.logToError(
-          message: e.toString(),
-          errorLog: st.toString(),
-          logFile: 'home_page.dart');
+        } else {
+
+        }
+      } else {
+
+      }
+    } catch (e,st) {
+
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'home_page.dart');
     }
   }
-
   Future<void> clearAllPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
-
   @override
   Widget build(BuildContext context) {
     List<_TileInfo> tiles = [
+      _TileInfo(
+        permissionKey: 'alw_auth',
+        title: 'Approve Project IOU',
+        icon: FontAwesomeIcons.check,
+        color: Colors.green, // Bright yellow
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => AuthConstructionPaymentRequestScreen()),
+          );
+        },
+      ),
+      _TileInfo(
+        permissionKey: 'alw_ofz_auth',
+        title: 'Approve Office IOU',
+        icon: Icons.work,
+        color: Colors.greenAccent, // Strong orange
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>AuthOfficePaymentRequest()));
+        },
+      ),
+      _TileInfo(
+        permissionKey: 'alw_req_pay',
+        title: 'Pending Payment',
+        icon: FontAwesomeIcons.accusoft,
+        color: Colors.teal, // Calm and fresh teal
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => RequestPaymentProcess()));
+        },
+      ),
+      _TileInfo(
+        permissionKey: 'alw_req_pay',
+        title: 'iou settlements',
+        icon: FontAwesomeIcons.equals,
+        color: Colors.teal, // Calm and fresh teal
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => IOUSettlements()));
+        },
+      ),
       _TileInfo(
         permissionKey: 'alw_pm_create',
         title: 'Project Management',
@@ -365,15 +422,60 @@ class _HomePageState extends State<HomePage> {
         onTap: () {
           Navigator.push(
             context,
+            MaterialPageRoute(builder: (context) => ApprovelPendingEstimations(isAuth: bool.tryParse(_permissions['alw_est_auth'].toString())??false ,isApprov: bool.tryParse(_permissions['alw_est_appr'].toString())??false,)),
+          );
+        },
+      ),
+      _TileInfo(
+        permissionKey: 'alw_rpt',
+        title: 'Report View',
+        color: Colors.pinkAccent, // Bold pink
+        icon: FontAwesomeIcons.fileLines,
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => ReportForm()));
+        },
+      ),
+      _TileInfo(
+        permissionKey: 'alw_pbc',
+        title: 'IOU Request',
+        icon: FontAwesomeIcons.codePullRequest,
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>ProjectBillRequest()));
+        },
+        color: Colors.blue, // Classic blue
+      ),
+      _TileInfo(
+        color: Colors.orangeAccent, // Lively orange
+        permissionKey: 'alw_ofz_exp',
+        title: 'Office IOU Request',
+        icon: FontAwesomeIcons.moneyBill,
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>OfficePaymentRequest()));
+        },
+      ),
+      _TileInfo(
+        color: Colors.redAccent, // Bold red
+        permissionKey: 'alw_cons_exp',
+        title: 'Data Entry',
+        icon: FontAwesomeIcons.hardHat,
+        onTap: () {
+          Navigator.push(
+            context,
             MaterialPageRoute(
-                builder: (context) => ApprovelPendingEstimations(
-                      isAuth: bool.tryParse(
-                              _permissions['alw_est_auth'].toString()) ??
-                          false,
-                      isApprov: bool.tryParse(
-                              _permissions['alw_est_appr'].toString()) ??
-                          false,
-                    )),
+                builder: (context) => DataEntryForm()),
+          );
+        },
+      ),
+      _TileInfo(
+        color: Colors.lightGreenAccent, // Fresh green
+        permissionKey: 'alw_prl',
+        title: 'My IOU Request',
+        icon: FontAwesomeIcons.fileInvoice,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ViewUserRequestList()),
           );
         },
       ),
@@ -426,6 +528,19 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       _TileInfo(
+        color: Colors.teal, // Soft pink
+        permissionKey: 'is_active',
+        title: 'Reminders',
+        icon: FontAwesomeIcons.noteSticky,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RemindersScreen()),
+          );
+        },
+      ),
+
+      _TileInfo(
         color: Colors.deepOrangeAccent, // Soft pink
         permissionKey: 'alw_pm',
         title: 'Maintenance',
@@ -437,6 +552,7 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
+
     ];
 
     return Scaffold(
@@ -451,11 +567,9 @@ class _HomePageState extends State<HomePage> {
           icon: const Icon(Icons.notifications),
           tooltip: 'Notifications',
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No new notifications'),
-                duration: Duration(seconds: 2),
-              ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
             );
           },
         ),
@@ -526,7 +640,6 @@ class _HomePageState extends State<HomePage> {
       }).toList(),
     );
   }
-
   Widget _buildAdvancedLayout(List<_TileInfo> tiles) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -584,6 +697,8 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+
 }
 
 class _TileInfo {
@@ -600,3 +715,4 @@ class _TileInfo {
     required this.onTap,
   });
 }
+

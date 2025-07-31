@@ -1,9 +1,9 @@
 import 'package:url_launcher/url_launcher.dart';
 
 class APIHost {
-    final String apiURL = 'http://localhost:8002/RN/public/apis/controllers';
-    // final String apiURL = 'https://apps.api.rokyholdings.com/RN/public/apis/controllers';
-  final String appVersion = '3.0.10';
+  //  final String apiURL = 'http://localhost:8002/RN/public/apis/controllers';
+     final String apiURL = 'https://apps.api.rokyholdings.com/RN/public/apis/controllers';
+  final String appVersion = '4.0.1';
 }
 class APIInfo{
   static String _apiVersion='';
