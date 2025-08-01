@@ -29,9 +29,8 @@ class _LoginAppState extends State<LoginApp> {
   @override
   void initState() {
     super.initState();
-    super.setState(() {
-      _userName.text = 'admin';
-      _password.text = '123Admin@@';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      autoLogin();
     });
   }
 
@@ -97,7 +96,7 @@ class _LoginAppState extends State<LoginApp> {
         }
       }
       else {
-
+        WaitDialog.hideDialog(context);
         String errorMessage = 'Login failed with status code ${response.statusCode}';
         if (response.body.isNotEmpty) {
           try {
@@ -135,6 +134,110 @@ class _LoginAppState extends State<LoginApp> {
     }
   }
 
+  Future<void> autoLogin() async {
+    WaitDialog.showWaitDialog(context, message: 'Login');
+
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('token');
+    if (token == null || token.isEmpty) {
+      WaitDialog.hideDialog(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No stored token – please log in manually.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+   PD.pd(text: token);
+    try {
+      final response = await http.post(
+        Uri.parse('${APIHost().apiURL}/login_controller.php/autoLogin'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "token": token,
+        }),
+      );
+      if (response.statusCode == 200) {
+        WaitDialog.hideDialog(context);
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        PD.pd(text: responseData.toString());
+        final int status = responseData['status'];
+        if (status == 200) {
+          UserCredentials().setUserData(
+              responseData['user_name'],
+              responseData['email'],
+              responseData['phone'],
+              responseData['idtbl_users'],
+              responseData['req_pw_change']
+          );
+          APIToken().token = token;
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          await prefs.setString('user_name', responseData['user_name']);
+          await prefs.setString('email', responseData['email']);
+          await prefs.setString('phone', responseData['phone']);
+          await prefs.setInt('idtbl_users', responseData['idtbl_users']??0);
+          await prefs.setInt('req_pw_change', responseData['req_pw_change']??0);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login successful! Redirecting...'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage(isAdvance: responseData['is_advance_mode']==1?true:false)),
+          );
+        } else {
+          final String message = responseData['message'] ?? 'Login failed';
+          PD.pd(text: message);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to login: $message'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+      else {
+        WaitDialog.hideDialog(context);
+        String errorMessage = 'Login failed with status code ${response.statusCode}';
+        if (response.body.isNotEmpty) {
+          try {
+            final errorData = jsonDecode(response.body);
+            errorMessage = errorData['message'] ?? errorMessage;
+          } catch (e,st) {
+            ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'login.dart');
+            errorMessage = response.body;
+          }
+        }
+
+        PD.pd(text: errorMessage);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e,st) {
+      ExceptionLogger.logToError(message: e.toString(),errorLog: st.toString(), logFile: 'login.dart');
+      String errorMessage = 'An error occurred during login: $e';
+      if (e is FormatException) {
+        errorMessage = 'Invalid JSON response';
+      } else if (e is SocketException) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      PD.pd(text: errorMessage);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
